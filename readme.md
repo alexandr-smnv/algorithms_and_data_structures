@@ -163,3 +163,109 @@ def merge_sort(arr):
         return arr
 
 ```
+
+
+## Быстрая сортировка
+
+В коде реализации алгоритма mergesort выполняется слишком много операций вырезки. Они создают копию. В конечном счете мы попытаемся получить версию, не злоупотребляющую вырезкой. Алгоритм сортировки, который просто переупорядочивает элементы в одном списке, называется алгоритмом сортировки на месте.
+
+Для начала рассмотрим простейшую версию алгоритма быстрой сортировки quicksort.
+Одним из способов обоснования алгоритма quicksort является необходимость максимально возможного упрощения шага объединения. Напомню, что в алгоритме сортировки слиянием mergesort большая часть наших умственных усилий была направлена на выполнение объеди- нения. В алгоритме быстрой сортировки quicksort самой трудной частью является разделение.
+
+```
+def quick_sort(array):
+    # базовый случай
+    if len(array) < 2:
+        return array
+    else:
+        # разделение
+        pivot = array[-1]
+        less = [i for i in array if i < pivot]
+        center = [i for i in array if i == pivot]
+        greater = [i for i in array if i > pivot]
+        
+        # рекурсивный вызов и объединение
+        return quick_sort(less) + center + quick_sort(greater)
+```
+
+Создадим версию сортировки на месте. Для этого необходимо исключить создание новых списков и объединение их в конце процесса.
+
+![quick_sort](quick_sort/quick_sort.jpeg)
+
+```
+def quick_sort(L, left=0, right=None):
+    if right is None:
+        right = len(L)
+
+    if right - left > 1:
+        # Разделяй
+        mid = partition(L, left, right)
+
+        # Властвуй
+        quick_sort(L, left, mid)
+        quick_sort(L, mid + 1, right)
+
+
+def partition(L, left, right):
+    pivot = right - 1
+    i = left    # Индекс в левой половине
+    j = pivot - 1   # Индекс в правой половине
+
+    while i < j:
+        # Перемещение i в позицию элемента >= L[pivot]
+        while L[i] < L[pivot]:
+            i = i + 1
+
+        # Перемещение j в позицию элемента < L[pivot]
+        while i < j and L[j] >= L[pivot]:
+            j = j - 1
+
+        # Обмен местами элементов i и j, если i < j
+        if i < j:
+            L[i], L[j] = L[j], L[i]
+
+    # Размещение центрального элемента в надлежащем месте.
+    if L[pivot] <= L[i]:
+        L[pivot], L[i] = L[i], L[pivot]
+        pivot = i
+
+    # Возврат индекса центрального элемента.
+    return pivot
+```
+
+Ниже приведена вторая реализация. Она использует (закрытую) вспомогательную функцию вместо параметров по умолчанию для обработки первона- чального вызова.
+
+Основное отличие исходного кода, приведенного ниже, заключается в том, что он использует случайно выбираемый центральный элемент вместо постоянного выбора самого последнего элемента.
+
+
+```
+from random import randrange
+
+def quick_sort(L):
+    _quicksort(L, 0, len(L))
+
+
+def _quicksort(L, left, right):
+    if right - left > 1:
+        mid = partition(L, left, right)
+        _quicksort(L, left, mid)
+        _quicksort(L, mid+1, right)
+
+
+def partition(L, left, right):
+    pivot = randrange(left, right)
+    L[pivot], L[right - 1] = L[right - 1], L[pivot]
+    i, j, pivot = left, right - 2, right - 1
+    while i < j:
+        while L[i] < L[pivot]:
+            i += 1
+        while i < j and L[j] >= L[pivot]:
+            j -= 1
+        if i < j:
+            L[i], L[j] = L[j], L[i]
+    if L[pivot] <= L[i]:
+        L[pivot], L[i] = L[i], L[pivot]
+        pivot = i
+
+    return pivot
+```
